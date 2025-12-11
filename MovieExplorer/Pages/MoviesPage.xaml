@@ -5,36 +5,42 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     Title="Movies">
 
-    <VerticalStackLayout Padding="16" Spacing="12">
+    <!-- Grid with 2 rows:
+         Row 0: header + search
+         Row 1: movie list -->
+    <Grid RowDefinitions="Auto,*"
+          Padding="16">
 
-        <!--Title -->
-        <Label Text="🎬 GitFlix"
-               FontSize="28"
-               FontAttributes="Bold"
-               HorizontalOptions="Center" />
+        <!-- Top area: title + welcome + search bar -->
+        <VerticalStackLayout Grid.Row="0" Spacing="8">
+            <Label Text="🎬 GitFlix"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
 
-        <!--Browse movies text -->
-        <Label Text="Browse movies"
-               FontSize="16"
-               HorizontalOptions="Center" />
+            <Label Text="Browse movies"
+                   FontSize="16"
+                   HorizontalOptions="Center" />
 
-        <!--search bar -->
-        <SearchBar x:Name="TitleSearchBar"
-           Placeholder="Search by title..."
-           TextChanged="TitleSearchBar_TextChanged" />
+            <!-- Search bar: calls TitleSearchBar_TextChanged in code-behind -->
+            <SearchBar x:Name="TitleSearchBar"
+                       Placeholder="Search by title..."
+                       TextChanged="TitleSearchBar_TextChanged" />
+        </VerticalStackLayout>
 
-        <!--movie list-->
-        <CollectionView x:Name="MoviesCollectionView">
+        <!--Movie list: fills remaining space and scrolls -->
+        <CollectionView Grid.Row="1"
+                        x:Name="MoviesCollectionView">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="8" ColumnDefinitions="Auto,*,Auto">
 
-                        <!-- Emojis-->
+                        <!-- Emoji column -->
                         <Label Text="{Binding Emoji}"
                                FontSize="32"
                                VerticalOptions="Center" />
 
-                        <!-- Title / year / genres -->
+                        <!-- Title/year/genres -->
                         <VerticalStackLayout Grid.Column="1"
                                              Spacing="2"
                                              Margin="8,0">
@@ -49,7 +55,7 @@
                                    TextColor="Gray" />
                         </VerticalStackLayout>
 
-                        <!-- Rating on the right hand side -->
+                        <!-- Rating on the right -->
                         <Label Grid.Column="2"
                                Text="{Binding ImdbRating}"
                                FontSize="14"
@@ -60,5 +66,5 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-    </VerticalStackLayout>
+    </Grid>
 </ContentPage>

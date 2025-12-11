@@ -1,74 +1,55 @@
 ﻿using System.Collections.ObjectModel;
 using MovieExplorer.Models;
+using MovieExplorer.Services;
 
 namespace MovieExplorer.Pages;
 
 public partial class MoviesPage : ContentPage
 {
-    //master list of all movies
+    // Service that fetches movies
+    private readonly MovieService _movieService = new MovieService();
+
+    // Full set of movies returned by the service
     private List<Movie> _allMovies = new List<Movie>();
 
-    // When we change this collection, the UI updates automatically.
+    // Movies currently shown in the UI
     private ObservableCollection<Movie> _movies = new ObservableCollection<Movie>();
 
     public MoviesPage()
     {
         InitializeComponent();
 
-        //bind the UI list (CollectionView) to the observable collection.
+        // Bind the CollectionView in XAML to the observable collection
         MoviesCollectionView.ItemsSource = _movies;
-
-        //load some sample movies so we can see and test the page. (for now)
-        LoadSampleMovies();
-        ApplyFilter(""); // Start with "no filter" so all movies appear
     }
 
-    private void LoadSampleMovies()
+    //called automatically when the page becomes visible and use this to load movies from the service
+    protected override async void OnAppearing()
     {
-        _allMovies.Clear();
+        base.OnAppearing();
 
-        _allMovies.Add(new Movie
+        //Only load once
+        if (_allMovies.Count == 0)
         {
-            Title = "The Matrix",
-            Year = 1999,
-            Genres = "Action, Sci-Fi",
-            Director = "The Wachowskis",
-            ImdbRating = 8.7,
-            Emoji = "🕶️"
-        });
+            //Ask the service for movies
+            var movies = await _movieService.GetMoviesAsync();
 
-        _allMovies.Add(new Movie
-        {
-            Title = "Finding Nemo",
-            Year = 2003,
-            Genres = "Animation, Family",
-            Director = "Andrew Stanton",
-            ImdbRating = 8.2,
-            Emoji = "🐠"
-        });
+            //Store them in the master list
+            _allMovies = movies;
 
-        _allMovies.Add(new Movie
-        {
-            Title = "Inception",
-            Year = 2010,
-            Genres = "Action, Sci-Fi",
-            Director = "Christopher Nolan",
-            ImdbRating = 8.8,
-            Emoji = "🌀"
-        });
+            //Show them in the UI
+            ApplyFilter(TitleSearchBar.Text);
+        }
     }
 
+    //Applies a text filter to the movie list and updates the UI collection
     private void ApplyFilter(string searchText)
     {
-        // Normalise the search text (null-safe and case-insensitive).
         searchText = searchText?.Trim() ?? "";
         string lower = searchText.ToLowerInvariant();
 
-        // Clear the UI collection.
         _movies.Clear();
 
-        //If search text is empty -> show all movies.
-        //Otherwise -> only movies whose Title contains the text.
         IEnumerable<Movie> toShow;
 
         if (string.IsNullOrEmpty(lower))
@@ -80,16 +61,15 @@ public partial class MoviesPage : ContentPage
             toShow = _allMovies.Where(m => m.Title.ToLowerInvariant().Contains(lower));
         }
 
-        // Add the filtered movies to the observable collection.
         foreach (var movie in toShow)
         {
             _movies.Add(movie);
         }
     }
 
+    //Called whenever the text in the SearchBar changes
     private void TitleSearchBar_TextChanged(object sender, TextChangedEventArgs e)
     {
-        // e.NewTextValue is the current text in the SearchBar.
         ApplyFilter(e.NewTextValue);
     }
 }
