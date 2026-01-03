@@ -5,6 +5,26 @@
              x:Class="MovieExplorer.App">
     <Application.Resources>
         <ResourceDictionary>
+
+            <!-- core colours of the page-->
+            <Color x:Key="Bg">#0F1115</Color>
+            <Color x:Key="Surface">#181B22</Color>
+            <Color x:Key="Surface2">#202533</Color>
+            <Color x:Key="Text">#E7EAF0</Color>
+            <Color x:Key="Muted">#A0A7B5</Color>
+
+            <!-- green hints -->
+            <Color x:Key="AccentGreen">#26D07C</Color>
+
+            <!-- common styles -->
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{StaticResource Text}" />
+            </Style>
+
+            <Style x:Key="PageBase" TargetType="ContentPage">
+                <Setter Property="BackgroundColor" Value="{StaticResource Bg}" />
+            </Style>
+            
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />

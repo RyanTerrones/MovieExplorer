@@ -7,46 +7,47 @@ namespace MovieExplorer.Services
     //class is responsible for getting movies for the app and now calls the OMDb web API to get live movie data
     public class MovieService
     {
-        // Reusable HTTP client for making web requests
+        //reusable HTTP client for making web requests
         private readonly HttpClient _httpClient = new HttpClient();
 
         //OMDb API key
         private const string ApiKey = "e664df8";
 
-        //gets a list of movies from the OMDb API.
-        public async Task<List<Movie>> GetMoviesAsync()
+        //gets a list of movies and full details the OMDb API.
+        public async Task<List<Movie>> GetMoviesAsync(string searchTerm)
         {
-            // This is the search text we send to OMDb
-            string searchTerm = "batman";
+            // if nothing typed, use a broad default
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = "batman";
+            }
 
-            //the OMDb URL
             string url =
                 $"https://www.omdbapi.com/?apikey={ApiKey}&s={Uri.EscapeDataString(searchTerm)}&type=movie";
 
             try
             {
-                // Send GET request to the OMDb API
+                //send GET request
                 var response = await _httpClient.GetAsync(url);
-
                 if (!response.IsSuccessStatusCode)
                 {
-                    // If something went wrong like no internetit will fall back to hard-coded sample movies
+                    //fallback if something goes wrong
                     return GetFallbackMovies();
                 }
 
-                // Read the JSON body as a string
+                //read json body
                 var json = await response.Content.ReadAsStringAsync();
 
-                //deserialize into a helper class that matches the OMDb JSON structure
+                //convert json into our helper type
                 var result = JsonSerializer.Deserialize<OmdbSearchResponse>(json);
 
-                // If the response is invalid or has no Search list, use fallback movies
+                //if response invalid or empty, fallback
                 if (result == null || result.Search == null || result.Search.Count == 0)
                 {
                     return GetFallbackMovies();
                 }
 
-                // Map OMDb results into our own Movie objects
+                //convert OMDb results into our Movie objects
                 var movies = new List<Movie>();
 
                 foreach (var item in result.Search)
@@ -58,11 +59,13 @@ namespace MovieExplorer.Services
                     {
                         Title = item.Title,
                         Year = year,
+                        ImdbId = item.imdbID,
                         Genres = "",
                         Director = "",
                         ImdbRating = 0.0,
                         PosterUrl = item.Poster,
-                        Emoji = "🎬" 
+                        Plot = "",
+                        Emoji = "🎬"
                     });
                 }
 
@@ -70,12 +73,76 @@ namespace MovieExplorer.Services
             }
             catch
             {
-                //use fallback movies
+                //network or json error -> fallback
                 return GetFallbackMovies();
             }
         }
 
-        // This is used as a fallback just incase the web Api call fails
+        //gets full details for one movie from OMDb using imdb id
+        public async Task<Movie?> GetMovieDetailsAsync(string imdbId)
+        {
+            //if we don't have an id, nothing to do
+            if (string.IsNullOrWhiteSpace(imdbId))
+            {
+                return null;
+            }
+
+            string url =
+                $"https://www.omdbapi.com/?apikey={ApiKey}&i={Uri.EscapeDataString(imdbId)}&plot=full";
+
+            try
+            {
+                //send GET request
+                var response = await _httpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                //read json body
+                var json = await response.Content.ReadAsStringAsync();
+
+                //convert json into our helper type
+                var detail = JsonSerializer.Deserialize<OmdbDetailResponse>(json);
+
+                //if response is bad, return null
+                if (detail == null || detail.Response == "False")
+                {
+                    return null;
+                }
+
+                //convert OMDb detail into our Movie object
+                int year = 0;
+                int.TryParse(detail.Year, out year);
+
+                double rating = 0.0;
+                double.TryParse(detail.imdbRating, out rating);
+
+                //create a Movie with the detailed info
+                var movie = new Movie
+                {
+                    Title = detail.Title ?? "",
+                    Year = year,
+                    Genres = detail.Genre ?? "",
+                    Director = detail.Director ?? "",
+                    ImdbRating = rating,
+                    PosterUrl = detail.Poster ?? "",
+                    Plot = detail.Plot ?? "",
+                    ImdbId = imdbId,
+                    Emoji = "🎬"
+                };
+
+                return movie;
+            }
+            catch
+            {
+                //on any error just return null (details failed)
+                return null;
+            }
+        }
+        
+
+        //this is used as a fallback just incase the web Api call fails
         private List<Movie> GetFallbackMovies()
         {
             return new List<Movie>
@@ -129,6 +196,19 @@ namespace MovieExplorer.Services
             public string imdbID { get; set; } = "";
             public string Type { get; set; } = "";
             public string Poster { get; set; } = "";
+        }
+
+        private class OmdbDetailResponse
+        {
+            public string? Title { get; set; }
+            public string? Year { get; set; }
+            public string? Genre { get; set; }
+            public string? Director { get; set; }
+            public string? imdbRating { get; set; }
+            public string? Poster { get; set; }
+            public string? Plot { get; set; }
+            public string? Response { get; set; }
+            public string? Error { get; set; }
         }
     }
 }

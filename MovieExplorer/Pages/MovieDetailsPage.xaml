@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MovieExplorer.Pages.MovieDetailsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Movie Details">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <!-- poster -->
+            <Border HeightRequest="260"
+                    StrokeThickness="0"
+                    BackgroundColor="Black">
+                <Image x:Name="PosterImage"
+                       Aspect="AspectFill" />
+            </Border>
+
+            <!-- title and year -->
+            <Label x:Name="TitleLabel"
+                   FontSize="24"
+                   FontAttributes="Bold" />
+
+            <Label x:Name="YearLabel"
+                   FontSize="16"
+                   TextColor="Gray" />
+
+            <!-- extra info -->
+            <Label x:Name="GenresLabel"
+                   FontSize="14"
+                   TextColor="Gray" />
+
+            <Label x:Name="DirectorLabel"
+                   FontSize="14"
+                   TextColor="Gray" />
+
+            <Label x:Name="RatingLabel"
+                   FontSize="16"
+                   FontAttributes="Bold" />
+
+            <!-- plot text is bound, no x:Name -->
+            <Label FontSize="14"
+                   Text="{Binding Plot}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

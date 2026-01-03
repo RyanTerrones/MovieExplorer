@@ -1,19 +1,14 @@
-﻿namespace MovieExplorer
+﻿using MovieExplorer.Pages;
+
+namespace MovieExplorer;
+
+public partial class App : Application
 {
-    public partial class App : Application
+    public App()
     {
-        public App()
-        {
-            InitializeComponent();  
+        InitializeComponent();
 
-
-
-
-        }
-
-        protected override Window CreateWindow(IActivationState? activationState)
-        {
-            return new Window(new AppShell());
-        }
+        //root of the app is a NavigationPage that starts on MoviesPage
+        MainPage = new NavigationPage(new MoviesPage());
     }
 }
