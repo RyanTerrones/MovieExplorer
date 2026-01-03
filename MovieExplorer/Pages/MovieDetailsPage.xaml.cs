@@ -10,7 +10,7 @@ public partial class MovieDetailsPage : ContentPage
 
     //service used to load full details
     private readonly MovieService _movieService = new MovieService();
-
+    
     public MovieDetailsPage(Movie movie)
     {
         InitializeComponent();
