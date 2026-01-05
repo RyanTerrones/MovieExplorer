@@ -24,7 +24,7 @@
             <Style x:Key="PageBase" TargetType="ContentPage">
                 <Setter Property="BackgroundColor" Value="{StaticResource Bg}" />
             </Style>
-            
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />

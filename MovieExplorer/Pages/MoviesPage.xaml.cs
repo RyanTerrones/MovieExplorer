@@ -18,6 +18,8 @@ public partial class MoviesPage : ContentPage
 
     private string _lastSearchTerm = "batman";
 
+    private bool _libraryLoaded;
+
     public MoviesPage()
     {
         InitializeComponent();
@@ -67,9 +69,10 @@ public partial class MoviesPage : ContentPage
     {
         base.OnAppearing();
 
-        if (_allMovies.Count == 0)
+        if (!_libraryLoaded)
         {
-            await LoadMoviesFromApiAsync(_lastSearchTerm);
+            await App.Library.LoadAsync();
+            _libraryLoaded = true;
         }
     }
 
@@ -127,11 +130,29 @@ public partial class MoviesPage : ContentPage
             return;
         }
 
-        //navigate to the details page, passing the selected movie
-        await Navigation.PushAsync(new MovieDetailsPage(selected));
+        await App.Library.AddToHistoryAsync(selected);
 
         //clear selection so tapping the same item again works
         ((CollectionView)sender).SelectedItem = null;
+
+        //navigate to the details page, passing the selected movie
+        await Navigation.PushAsync(new MovieDetailsPage(selected));
+
+    }
+
+    private async void FavouritesButton_Clicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new FavouritesPage());
+    }
+
+    private async void HistoryButton_Clicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new HistoryPage());
+    }
+
+    private async void WatchlistButton_Clicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new MovieExplorer.Pages.WatchlistPage());
     }
 
 }

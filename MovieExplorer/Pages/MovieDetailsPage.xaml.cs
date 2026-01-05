@@ -1,5 +1,6 @@
 using MovieExplorer.Models;
 using MovieExplorer.Services;
+using Microsoft.Maui.Graphics;
 
 namespace MovieExplorer.Pages;
 
@@ -30,6 +31,9 @@ public partial class MovieDetailsPage : ContentPage
         GenresLabel.Text = "";
         DirectorLabel.Text = "";
         RatingLabel.Text = "IMDB Rating: loading...";
+
+        UpdateFavouriteButton();
+        UpdateWatchlistButton();
     }
 
     protected override async void OnAppearing()
@@ -90,5 +94,45 @@ public partial class MovieDetailsPage : ContentPage
         {
             RatingLabel.Text = "IMDB Rating: N/A";
         }
+    }
+
+    private void UpdateFavouriteButton()
+    {
+        var isFav = App.Library.IsFavourite(_initialMovie.ImdbId);
+
+        FavouriteStar.Fill = isFav
+            ? new SolidColorBrush(Color.FromArgb("#26D07C"))
+            : new SolidColorBrush(Colors.Transparent);
+
+        FavouriteStar.Stroke = new SolidColorBrush(Color.FromArgb(isFav ? "#26D07C" : "#A0A7B5"));
+    }
+
+    private async void FavouriteButton_Clicked(object sender, EventArgs e)
+    {
+        await App.Library.ToggleFavouriteAsync(_initialMovie);
+        UpdateFavouriteButton();
+    }
+
+    private async void FavouriteButton_Tapped(object sender, TappedEventArgs e)
+    {
+        await App.Library.ToggleFavouriteAsync(_initialMovie);
+        UpdateFavouriteButton();
+    }
+
+    private void UpdateWatchlistButton()
+    {
+        var onList = App.Library.IsWatchlisted(_initialMovie.ImdbId);
+
+        WatchlistIcon.Fill = onList
+            ? new SolidColorBrush(Color.FromArgb("#26D07C"))
+            : new SolidColorBrush(Colors.Transparent);
+
+        WatchlistIcon.Stroke = new SolidColorBrush(Color.FromArgb(onList ? "#26D07C" : "#A0A7B5"));
+    }
+
+    private async void Watchlist_Tapped(object sender, TappedEventArgs e)
+    {
+        await App.Library.ToggleWatchlistAsync(_initialMovie);
+        UpdateWatchlistButton();
     }
 }

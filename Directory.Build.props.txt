@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <!-- Keep the project in OneDrive, but put bin/obj in a short path -->
+    <BaseIntermediateOutputPath>C:\_maui_build\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>C:\_maui_build\bin\$(MSBuildProjectName)\</BaseOutputPath>
+  </PropertyGroup>
+</Project>

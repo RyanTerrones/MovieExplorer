@@ -11,11 +11,12 @@ public class Movie
     public string Director { get; set; } = string.Empty;
     public double ImdbRating { get; set; }
 
+    [JsonPropertyName("Poster")]
+    public string Poster { get; set; } = string.Empty;
+
     //id used by OMDb
     public string ImdbId { get; set; } = string.Empty;
 
-    [JsonPropertyName("Poster")]
-    public string Poster { get; set; }
 
     [JsonIgnore]
     public string? PosterUrl
