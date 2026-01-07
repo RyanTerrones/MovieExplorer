@@ -1,181 +1,320 @@
 ﻿using System.Text.Json;
+using Microsoft.Maui.Storage;
 using MovieExplorer.Models;
 
-namespace MovieExplorer.Services
+namespace MovieExplorer.Services;
+
+public class LibraryService
 {
-    //this is to save/load favourites + history to a JSON file.
-    public class LibraryService
+    // this type name + binds these to XAML
+    public class MovieMini
     {
-        private readonly string _filePath = Path.Combine(FileSystem.AppDataDirectory, "library.json");
-        private LibraryData _data = new();
-        //this is to get the favourites list for a page.
-        public List<MovieMini> GetFavourites() => _data.Favourites;
+        public string ImdbId { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string Poster { get; set; } = "";
+        public string Year { get; set; } = "";
 
-        //this is to get the history list for a page.
-        public List<MovieMini> GetHistory() => _data.History;
-
-        public IReadOnlyList<MovieMini> GetWatchlist() => _data.Watchlist;
-
-        // I call this once to load saved data (if the file exists).
-        public async Task LoadAsync()
+        // XAML uses PosterSafe
+        public string PosterSafe
         {
-            try
+            get
             {
-                if (!File.Exists(_filePath))
+                if (string.IsNullOrWhiteSpace(Poster) ||
+                    Poster.Equals("N/A", StringComparison.OrdinalIgnoreCase))
+                    return "";
+
+                // force https (Android can block http images)
+                return Poster.Replace("http://", "https://");
+            }
+        }
+    }
+
+    private const string KeyFavourites = "library_favourites_v1";
+    private const string KeyWatchlist = "library_watchlist_v1";
+    private const string KeyHistory = "library_history_v1";
+
+    private readonly object _lock = new();
+
+    private List<MovieMini> _favourites = new();
+    private List<MovieMini> _watchlist = new();
+    private List<MovieMini> _history = new();
+
+    private bool _loaded;
+
+    public Task LoadAsync()
+    {
+        lock (_lock)
+        {
+            _favourites = LoadList(KeyFavourites);
+            _watchlist = LoadList(KeyWatchlist);
+            _history = LoadList(KeyHistory);
+            _loaded = true;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void EnsureLoaded()
+    {
+        if (_loaded) return;
+
+        LoadAsync().GetAwaiter().GetResult();
+    }
+
+    // get lists
+    public List<MovieMini> GetFavourites()
+    {
+        EnsureLoaded();
+        lock (_lock) return _favourites.ToList();
+    }
+
+    public List<MovieMini> GetWatchList()
+    {
+        EnsureLoaded();
+        lock (_lock) return _watchlist.ToList();
+    }
+
+    public List<MovieMini> GetHistory()
+    {
+        EnsureLoaded();
+        lock (_lock) return _history.ToList();
+    }
+
+    // checks
+    public bool IsFavourite(string imdbId)
+    {
+        if (string.IsNullOrWhiteSpace(imdbId)) return false;
+        EnsureLoaded();
+        lock (_lock) return _favourites.Any(x => x.ImdbId == imdbId);
+    }
+
+    public bool IsWatchlisted(string imdbId)
+    {
+        if (string.IsNullOrWhiteSpace(imdbId)) return false;
+        EnsureLoaded();
+        lock (_lock) return _watchlist.Any(x => x.ImdbId == imdbId);
+    }
+
+    // toggle Favourite
+    public Task ToggleFavouriteAsync(MovieMini movie)
+        => ToggleFavouriteAsync(movie.ImdbId, movie.Title, movie.Poster, movie.Year);
+
+    public Task ToggleFavouriteAsync(Movie movie)
+        => ToggleFavouriteAsync(ToMini(movie));
+
+    public Task ToggleFavouriteAsync(string imdbId, string title, string poster, string year)
+    {
+        if (string.IsNullOrWhiteSpace(imdbId)) return Task.CompletedTask;
+        EnsureLoaded();
+
+        lock (_lock)
+        {
+            var existing = _favourites.FirstOrDefault(x => x.ImdbId == imdbId);
+            if (existing != null)
+            {
+                _favourites.Remove(existing);
+            }
+            else
+            {
+                _favourites.Insert(0, new MovieMini
                 {
-                    _data = new LibraryData();
-                    return;
-                }
+                    ImdbId = imdbId,
+                    Title = title ?? "",
+                    Poster = poster ?? "",
+                    Year = year ?? ""
+                });
+            }
 
-                var json = await File.ReadAllTextAsync(_filePath);
-                _data = JsonSerializer.Deserialize<LibraryData>(json) ?? new LibraryData();
-            }
-            catch
-            {
-                _data = new LibraryData();
-            }
+            SaveList(KeyFavourites, _favourites);
         }
 
-        // I call this whenever I change favourites/history.
-        private async Task SaveAsync()
+        return Task.CompletedTask;
+    }
+
+    // toggle Watchlist
+    public Task ToggleWatchlistAsync(MovieMini movie)
+        => ToggleWatchlistAsync(movie.ImdbId, movie.Title, movie.Poster, movie.Year);
+
+    public Task ToggleWatchlistAsync(Movie movie)
+        => ToggleWatchlistAsync(ToMini(movie));
+
+    public Task ToggleWatchlistAsync(string imdbId, string title, string poster, string year)
+    {
+        if (string.IsNullOrWhiteSpace(imdbId)) return Task.CompletedTask;
+        EnsureLoaded();
+
+        lock (_lock)
         {
-            var json = JsonSerializer.Serialize(_data, new JsonSerializerOptions { WriteIndented = true });
-            await File.WriteAllTextAsync(_filePath, json);
-        }
-
-        // I use this to check if a movie is already favourited.
-        public bool IsFavourite(string? imdbId)
-            => !string.IsNullOrWhiteSpace(imdbId) && _data.Favourites.Any(x => x.ImdbId == imdbId);
-
-        // I use this to add/remove a movie from favourites.
-        public async Task ToggleFavouriteAsync(Movie movie)
-        {
-            if (string.IsNullOrWhiteSpace(movie.ImdbId))
-                return;
-
-            var existing = _data.Favourites.FirstOrDefault(x => x.ImdbId == movie.ImdbId);
-
+            var existing = _watchlist.FirstOrDefault(x => x.ImdbId == imdbId);
             if (existing != null)
-                _data.Favourites.Remove(existing);
+            {
+                _watchlist.Remove(existing);
+            }
             else
-                _data.Favourites.Insert(0, MovieMini.FromMovie(movie));
-
-            await SaveAsync();
-        }
-
-        // I use this to log what I opened most recently in history.
-        public async Task AddToHistoryAsync(Movie movie)
-        {
-            if (string.IsNullOrWhiteSpace(movie.ImdbId))
-                return;
-
-            _data.History.RemoveAll(x => x.ImdbId == movie.ImdbId);
-            _data.History.Insert(0, MovieMini.FromMovie(movie));
-
-            if (_data.History.Count > 50)
-                LibraryData.TrimTo50(_data.History);
-
-            await SaveAsync();
-        }
-
-        // This is the JSON structure I save to disk.
-        private class LibraryData
-        {
-            public List<MovieMini> Favourites { get; set; } = new();
-            public List<MovieMini> History { get; set; } = new();
-            public List<MovieMini> Watchlist { get; set; } = new();
-
-            public static void TrimTo50(List<MovieMini> list)
             {
-                if (list.Count > 50)
-                    list.RemoveRange(50, list.Count - 50);
+                _watchlist.Insert(0, new MovieMini
+                {
+                    ImdbId = imdbId,
+                    Title = title ?? "",
+                    Poster = poster ?? "",
+                    Year = year ?? ""
+                });
             }
+
+            SaveList(KeyWatchlist, _watchlist);
         }
 
-        // This is a smaller movie object I store in the JSON file.
-        public class MovieMini
-        {
-            public string ImdbId { get; set; } = "";
-            public string Title { get; set; } = "";
-            public string Year { get; set; } = "";
-            public string Poster { get; set; } = "";
+        return Task.CompletedTask;
+    }
 
-            public static MovieMini FromMovie(Movie m) => new()
+    // history 
+    public Task AddToHistoryAsync(MovieMini movie)
+        => AddToHistoryAsync(movie.ImdbId, movie.Title, movie.Poster, movie.Year);
+
+    public Task AddToHistoryAsync(Movie movie)
+        => AddToHistoryAsync(ToMini(movie));
+
+    public Task AddToHistoryAsync(string imdbId, string title, string poster, string year)
+    {
+        if (string.IsNullOrWhiteSpace(imdbId)) return Task.CompletedTask;
+        EnsureLoaded();
+
+        lock (_lock)
+        {
+            // move-to-top behavior
+            _history.RemoveAll(x => x.ImdbId == imdbId);
+
+            _history.Insert(0, new MovieMini
             {
-                ImdbId = m.ImdbId ?? "",
-                Title = m.Title ?? "",
-                Year = m.Year > 0 ? m.Year.ToString() : "",
-                Poster = m.Poster ?? ""
-            };
+                ImdbId = imdbId,
+                Title = title ?? "",
+                Poster = poster ?? "",
+                Year = year ?? ""
+            });
 
-            public string PosterSafe => string.IsNullOrWhiteSpace(Poster) || Poster == "N/A"
-                ? ""
-                : Poster.Replace("http://", "https://");
+            // keep history from growing forever
+            const int max = 200;
+            if (_history.Count > max)
+                _history = _history.Take(max).ToList();
+
+            SaveList(KeyHistory, _history);
         }
 
-        // Clears all favourites and saves.
-        public async Task ClearFavouritesAsync()
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveHistoryAsync(string imdbId) => RemoveFromHistoryAsync(imdbId);
+
+    public Task RemoveFromHistoryAsync(string imdbId)
+    {
+        if (string.IsNullOrWhiteSpace(imdbId)) return Task.CompletedTask;
+        EnsureLoaded();
+
+        lock (_lock)
         {
-            _data.Favourites.Clear();
-            await SaveAsync();
+            _history.RemoveAll(x => x.ImdbId == imdbId);
+            SaveList(KeyHistory, _history);
         }
 
-        // Clears all history and saves.
-        public async Task ClearHistoryAsync()
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveFavouriteAsync(string imdbId)
+    {
+        if (string.IsNullOrWhiteSpace(imdbId)) return Task.CompletedTask;
+        EnsureLoaded();
+
+        lock (_lock)
         {
-            _data.History.Clear();
-            await SaveAsync();
+            _favourites.RemoveAll(x => x.ImdbId == imdbId);
+            SaveList(KeyFavourites, _favourites);
         }
 
-        public bool IsWatchlisted(string imdbId) => _data.Watchlist.Any(x => x.ImdbId == imdbId);
+        return Task.CompletedTask;
+    }
 
-        public async Task ToggleWatchlistAsync(Movie movie)
+    public Task RemoveWatchlistAsync(string imdbId)
+    {
+        if (string.IsNullOrWhiteSpace(imdbId)) return Task.CompletedTask;
+        EnsureLoaded();
+
+        lock (_lock)
         {
-            var existing = _data.Watchlist.FirstOrDefault(x => x.ImdbId == movie.ImdbId);
-
-            if (existing != null)
-                _data.Watchlist.Remove(existing);
-            else
-                _data.Watchlist.Insert(0, MovieMini.FromMovie(movie));
-
-            await SaveAsync();
+            _watchlist.RemoveAll(x => x.ImdbId == imdbId);
+            SaveList(KeyWatchlist, _watchlist);
         }
 
-        public async Task ClearWatchlistAsync()
+        return Task.CompletedTask;
+    }
+
+    public Task ClearFavouritesAsync()
+    {
+        EnsureLoaded();
+        lock (_lock)
         {
-            _data.Watchlist.Clear();
-            await SaveAsync();
+            _favourites.Clear();
+            SaveList(KeyFavourites, _favourites);
         }
+        return Task.CompletedTask;
+    }
 
-        public async Task RemoveFavouriteAsync(string imdbId)
+    public Task ClearWatchlistAsync()
+    {
+        EnsureLoaded();
+        lock (_lock)
         {
-            var item = _data.Favourites.FirstOrDefault(x => x.ImdbId == imdbId);
-            if (item != null)
-            {
-                _data.Favourites.Remove(item);
-                await SaveAsync();
-            }
+            _watchlist.Clear();
+            SaveList(KeyWatchlist, _watchlist);
         }
+        return Task.CompletedTask;
+    }
 
-        public async Task RemoveHistoryAsync(string imdbId)
+    public Task ClearHistoryAsync()
+    {
+        EnsureLoaded();
+        lock (_lock)
         {
-            var item = _data.History.FirstOrDefault(x => x.ImdbId == imdbId);
-            if (item != null)
-            {
-                _data.History.Remove(item);
-                await SaveAsync();
-            }
+            _history.Clear();
+            SaveList(KeyHistory, _history);
         }
+        return Task.CompletedTask;
+    }
 
-        public async Task RemoveWatchlistAsync(string imdbId)
+    // helpers
+    private static MovieMini ToMini(Movie m)
+    {
+        return new MovieMini
         {
-            var item = _data.Watchlist.FirstOrDefault(x => x.ImdbId == imdbId);
-            if (item != null)
-            {
-                _data.Watchlist.Remove(item);
-                await SaveAsync();
-            }
-        }
+            ImdbId = m.ImdbId ?? "",
+            Title = m.Title ?? "",
+            Poster = m.Poster ?? "",
+            Year = m.Year.ToString()
+        };
+    }
 
+    private static List<MovieMini> LoadList(string key)
+    {
+        try
+        {
+            var json = Preferences.Get(key, "[]");
+            return JsonSerializer.Deserialize<List<MovieMini>>(json) ?? new List<MovieMini>();
+        }
+        catch
+        {
+            return new List<MovieMini>();
+        }
+    }
+
+    private static void SaveList(string key, List<MovieMini> list)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(list);
+            Preferences.Set(key, json);
+        }
+        catch
+        {
+            //blank
+        }
     }
 }

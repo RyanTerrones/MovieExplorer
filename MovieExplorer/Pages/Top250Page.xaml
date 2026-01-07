@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="MovieExplorer.Pages.Top250Page"
+    NavigationPage.HasNavigationBar="False"
+    BackgroundColor="{DynamicResource Bg}">
+
+    <Grid Padding="18" RowSpacing="16" RowDefinitions="Auto,*">
+
+        <!-- header row (Back + Menu + Title) -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" VerticalOptions="Center">
+            <!-- back button -->
+            <Button
+                Text="←"
+                WidthRequest="44"
+                HeightRequest="44"
+                Clicked="Back_Clicked"
+                BackgroundColor="{DynamicResource CardBg}"
+                TextColor="{DynamicResource Text}"
+                CornerRadius="12" />
+
+            <!-- menu -->
+            <Button
+                Grid.Column="1"
+                Text="☰"
+                WidthRequest="44"
+                HeightRequest="44"
+                Margin="10,0,0,0"
+                Clicked="Menu_Clicked"
+                BackgroundColor="{DynamicResource CardBg}"
+                TextColor="{DynamicResource Text}"
+                CornerRadius="12" />
+
+            <!-- title -->
+            <Label
+                Grid.Column="2"
+                Text="Top 25"
+                HorizontalTextAlignment="Center"
+                VerticalTextAlignment="Center"
+                FontSize="22"
+                FontAttributes="Bold"
+                TextColor="{DynamicResource Text}" />
+        </Grid>
+
+        <!-- scrollable list -->
+        <CollectionView
+            Grid.Row="1"
+            ItemsSource="{Binding Items}"
+            SelectionMode="Single"
+            SelectionChanged="List_SelectionChanged">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border
+                        BackgroundColor="{DynamicResource CardBg}"
+                        Stroke="{DynamicResource CardStroke}"
+                        StrokeThickness="1"
+                        Padding="14"
+                        Margin="0,0,0,12"
+                        StrokeShape="RoundRectangle 16">
+
+                        <VerticalStackLayout Spacing="4">
+                            <Label
+                                Text="{Binding Title}"
+                                FontAttributes="Bold"
+                                FontSize="16"
+                                TextColor="{DynamicResource Text}"
+                                LineBreakMode="TailTruncation" />
+
+                            <Label
+                                Text="{Binding Subtitle}"
+                                FontSize="12"
+                                TextColor="{DynamicResource SubText}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+    </Grid>
+</ContentPage>

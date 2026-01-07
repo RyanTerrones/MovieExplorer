@@ -4,16 +4,16 @@ using MovieExplorer.Models;
 
 namespace MovieExplorer.Services
 {
-    //class is responsible for getting movies for the app and now calls the OMDb web API to get live movie data
+    // class is responsible for getting movies for the app and now calls the OMDb web API to get live movie data
     public class MovieService
     {
-        //reusable HTTP client for making web requests
+        // reusable HTTP client for making web requests
         private readonly HttpClient _httpClient = new HttpClient();
 
-        //OMDb API key
+        // OMDb API key
         private const string ApiKey = "e664df8";
 
-        //gets a list of movies and full details the OMDb API.
+        // gets a list of movies and full details the OMDb API.
         public async Task<List<Movie>> GetMoviesAsync(string searchTerm)
         {
             // if nothing typed, use a broad default
@@ -27,7 +27,7 @@ namespace MovieExplorer.Services
 
             try
             {
-                //send GET request
+                // send GET request
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -35,19 +35,19 @@ namespace MovieExplorer.Services
                     return GetFallbackMovies();
                 }
 
-                //read json body
+                // read json body
                 var json = await response.Content.ReadAsStringAsync();
 
-                //convert json into our helper type
+                // convert json into our helper type
                 var result = JsonSerializer.Deserialize<OmdbSearchResponse>(json);
 
-                //if response invalid or empty, fallback
+                // if response invalid or empty, fallback
                 if (result == null || result.Search == null || result.Search.Count == 0)
                 {
                     return GetFallbackMovies();
                 }
 
-                //convert OMDb results into our Movie objects
+                // convert OMDb results into our Movie objects
                 var movies = new List<Movie>();
 
                 foreach (var item in result.Search)
@@ -73,15 +73,15 @@ namespace MovieExplorer.Services
             }
             catch
             {
-                //network or json error -> fallback
+                // network or json error -> fallback
                 return GetFallbackMovies();
             }
         }
 
-        //gets full details for one movie from OMDb using imdb id
+        // gets full details for one movie from OMDb using imdb id
         public async Task<Movie?> GetMovieDetailsAsync(string imdbId)
         {
-            //if we don't have an id, nothing to do
+            // if we don't have an id, nothing to do
             if (string.IsNullOrWhiteSpace(imdbId))
             {
                 return null;
@@ -92,33 +92,33 @@ namespace MovieExplorer.Services
 
             try
             {
-                //send GET request
+                // send GET request
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
                 {
                     return null;
                 }
 
-                //read json body
+                // read json body
                 var json = await response.Content.ReadAsStringAsync();
 
-                //convert json into our helper type
+                // convert json into our helper type
                 var detail = JsonSerializer.Deserialize<OmdbDetailResponse>(json);
 
-                //if response is bad, return null
+                // if response is bad, return null
                 if (detail == null || detail.Response == "False")
                 {
                     return null;
                 }
 
-                //convert OMDb detail into our Movie object
+                // convert OMDb detail into our Movie object
                 int year = 0;
                 int.TryParse(detail.Year, out year);
 
                 double rating = 0.0;
                 double.TryParse(detail.imdbRating, out rating);
 
-                //create a Movie with the detailed info
+                // create a Movie with the detailed info
                 var movie = new Movie
                 {
                     Title = detail.Title ?? "",
@@ -136,13 +136,13 @@ namespace MovieExplorer.Services
             }
             catch
             {
-                //on any error just return null (details failed)
+                // on any error just return null (details failed)
                 return null;
             }
         }
         
 
-        //this is used as a fallback just incase the web Api call fails
+        // this is used as a fallback just incase the web Api call fails
         private List<Movie> GetFallbackMovies()
         {
             return new List<Movie>
@@ -180,7 +180,7 @@ namespace MovieExplorer.Services
     }; 
         }
 
-        //helper classes match the OMDb JSON structure
+        // helper classes match the OMDb JSON structure
         private class OmdbSearchResponse
         {
             public List<OmdbMovieItem>? Search { get; set; }

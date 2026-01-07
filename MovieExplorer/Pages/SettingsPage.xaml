@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="MovieExplorer.Pages.SettingsPage"
+    NavigationPage.HasNavigationBar="False"
+    BackgroundColor="{DynamicResource Bg}">
+
+    <VerticalStackLayout Padding="20" Spacing="16">
+
+        <!-- header row -->
+        <Grid ColumnDefinitions="Auto,*" VerticalOptions="Center">
+
+            <Button Text="☰"
+                    WidthRequest="44"
+                    HeightRequest="44"
+                    Clicked="Menu_Clicked"
+                    BackgroundColor="Transparent"
+                    TextColor="{DynamicResource Text}" />
+
+            <Label Grid.Column="1"
+                   Text="Settings"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   TextColor="{DynamicResource Text}" />
+
+        </Grid>
+
+        <!-- card -->
+        <Border BackgroundColor="{DynamicResource CardBg}"
+                Stroke="{DynamicResource CardStroke}"
+                StrokeThickness="1"
+                Padding="14">
+
+            <VerticalStackLayout Spacing="10">
+
+                <Grid ColumnDefinitions="Auto,*"
+                      RowDefinitions="Auto,Auto"
+                      RowSpacing="8">
+
+                    <Label Text="Dark Mode"
+                           FontSize="16"
+                           TextColor="{DynamicResource Text}" />
+
+                    <Switch x:Name="DarkModeSwitch"
+                            Grid.Column="1"
+                            Toggled="DarkModeSwitch_Toggled" />
+
+                    <Label Grid.Row="1"
+                           Text="(Saves automatically)"
+                           FontSize="12"
+                           TextColor="{DynamicResource SubText}" />
+
+                </Grid>
+
+            </VerticalStackLayout>
+
+        </Border>
+
+    </VerticalStackLayout>
+</ContentPage>

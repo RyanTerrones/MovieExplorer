@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="MovieExplorer.Pages.LoginPage"
+    NavigationPage.HasNavigationBar="False"
+    BackgroundColor="{DynamicResource Bg}">
+
+    <VerticalStackLayout Padding="18" Spacing="14">
+
+        <Grid ColumnDefinitions="Auto,*" VerticalOptions="Center">
+            <Button Text="?"
+                    WidthRequest="44"
+                    HeightRequest="44"
+                    Clicked="Menu_Clicked"
+                    BackgroundColor="Transparent"
+                    TextColor="{DynamicResource Text}" />
+
+            <Label Grid.Column="1"
+                   Text="Login"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   VerticalOptions="Center"
+                   TextColor="{DynamicResource Text}" />
+        </Grid>
+
+        <Border BackgroundColor="{DynamicResource CardBg}"
+                Stroke="{DynamicResource CardStroke}"
+                StrokeThickness="1"
+                Padding="16"
+                StrokeShape="RoundRectangle 18">
+
+            <VerticalStackLayout Spacing="10">
+                <Label Text="This is a placeholder login screen."
+                       TextColor="{DynamicResource Text}" />
+
+                <Entry Placeholder="Email"
+                       TextColor="{DynamicResource Text}"
+                       PlaceholderColor="{DynamicResource SubText}" />
+
+                <Entry Placeholder="Password"
+                       IsPassword="True"
+                       TextColor="{DynamicResource Text}"
+                       PlaceholderColor="{DynamicResource SubText}" />
+
+                <Button Text="Sign In"
+                        Clicked="SignIn_Clicked" />
+            </VerticalStackLayout>
+        </Border>
+
+    </VerticalStackLayout>
+</ContentPage>

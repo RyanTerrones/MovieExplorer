@@ -10,26 +10,38 @@ public partial class HistoryPage : ContentPage
         InitializeComponent();
     }
 
-    // Refreshes the list every time I open/return to this page.
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        RefreshHistory();
+        Refresh();
     }
 
-    private void RefreshHistory()
+    private void Refresh()
     {
         HistoryView.ItemsSource = null;
         HistoryView.ItemsSource = App.Library.GetHistory();
     }
 
+    private void Menu_Clicked(object sender, EventArgs e)
+    {
+        MainFlyoutPage.Current?.ToggleFlyout();
+    }
+
+    private async void Back_Clicked(object sender, EventArgs e)
+    {
+        if (Navigation.NavigationStack.Count > 1)
+            await Navigation.PopAsync();
+        else
+            MainFlyoutPage.Current?.NavigateTo(new MoviesPage());
+    }
+
     private async void ClearHistory_Clicked(object sender, EventArgs e)
     {
-        var ok = await DisplayAlert("Clear history?", "This will remove all history items.", "Clear", "Cancel");
+        var ok = await DisplayAlert("Clear history?", "This will remove all history movies.", "Clear", "Cancel");
         if (!ok) return;
 
         await App.Library.ClearHistoryAsync();
-        RefreshHistory();
+        Refresh();
     }
 
     private async void HistoryView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -52,13 +64,12 @@ public partial class HistoryPage : ContentPage
 
     private async void RemoveHistory_Invoked(object sender, EventArgs e)
     {
-        var swipeItem = (SwipeItem)sender;
-        var imdbId = swipeItem.CommandParameter as string;
+        if (sender is not SwipeItem swipeItem) return;
 
-        if (string.IsNullOrWhiteSpace(imdbId))
-            return;
+        var imdbId = swipeItem.CommandParameter as string;
+        if (string.IsNullOrWhiteSpace(imdbId)) return;
 
         await App.Library.RemoveHistoryAsync(imdbId);
-        RefreshHistory();
+        Refresh();
     }
 }

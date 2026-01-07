@@ -1,84 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     x:Class="MovieExplorer.Pages.HistoryPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    BackgroundColor="#0F1115"
-    Title="History">
+    Title="History"
+    NavigationPage.HasNavigationBar="False"
+    BackgroundColor="{DynamicResource Bg}">
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Clear" Clicked="ClearHistory_Clicked" />
-    </ContentPage.ToolbarItems>
+    <Grid Padding="16" RowDefinitions="Auto,*" RowSpacing="12">
 
-    <CollectionView x:Name="HistoryView"
-                    SelectionMode="Single"
-                    SelectionChanged="HistoryView_SelectionChanged"
-                    Margin="16,12">
+        <!-- top bar  -->
+        <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="10">
+            <Button Text="?"
+                    WidthRequest="44"
+                    HeightRequest="44"
+                    Clicked="Back_Clicked"
+                    BackgroundColor="{DynamicResource CardBg}"
+                    TextColor="{DynamicResource Text}" />
 
-        <CollectionView.EmptyView>
-            <VerticalStackLayout Spacing="8"
-                                 HorizontalOptions="Center"
-                                 VerticalOptions="Center">
-                <Label Text="No history yet"
-                       TextColor="#E7EAF0"
-                       FontAttributes="Bold"
-                       FontSize="18"
-                       HorizontalTextAlignment="Center" />
+            <Button Grid.Column="1"
+                    Text="?"
+                    WidthRequest="44"
+                    HeightRequest="44"
+                    Clicked="Menu_Clicked"
+                    BackgroundColor="{DynamicResource CardBg}"
+                    TextColor="{DynamicResource Text}" />
 
-                <Label Text="Open a movie to start tracking it here."
-                       TextColor="#A0A7B5"
-                       FontSize="13"
-                       HorizontalTextAlignment="Center" />
-            </VerticalStackLayout>
-        </CollectionView.EmptyView>
+            <Label Grid.Column="2"
+                   Text="History"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   TextColor="{DynamicResource Text}" />
 
-        <CollectionView.ItemTemplate>
-            <DataTemplate>
+            <Button Grid.Column="3"
+                    Text="Clear"
+                    Clicked="ClearHistory_Clicked"
+                    BackgroundColor="{DynamicResource CardBg}"
+                    TextColor="{DynamicResource Text}" />
+        </Grid>
 
-                <SwipeView>
-                    <SwipeView.RightItems>
-                        <SwipeItems Mode="Execute">
-                            <SwipeItem Text="Remove"
-                                       BackgroundColor="#202533"
-                                       Invoked="RemoveHistory_Invoked"
-                                       CommandParameter="{Binding ImdbId}" />
-                        </SwipeItems>
-                    </SwipeView.RightItems>
+        <CollectionView Grid.Row="1"
+                        x:Name="HistoryView"
+                        SelectionMode="Single"
+                        SelectionChanged="HistoryView_SelectionChanged">
 
-                    <Border BackgroundColor="#181B22"
-                            Stroke="#202533"
-                            StrokeThickness="1"
-                            Padding="12"
-                            Margin="0,0,0,10">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="18"/>
-                        </Border.StrokeShape>
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="No history yet"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalTextAlignment="Center"
+                           TextColor="{DynamicResource Text}" />
+                    <Label Text="Open a movie to start tracking it here."
+                           FontSize="12"
+                           HorizontalTextAlignment="Center"
+                           TextColor="{DynamicResource SubText}" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
 
-                        <Grid ColumnDefinitions="70,*" ColumnSpacing="12">
-                            <Image Source="{Binding PosterSafe}"
-                                   WidthRequest="70"
-                                   HeightRequest="100"
-                                   Aspect="AspectFill" />
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Execute">
+                                <SwipeItem Text="Remove"
+                                           BackgroundColor="#702D33"
+                                           Invoked="RemoveHistory_Invoked"
+                                           CommandParameter="{Binding ImdbId}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
 
-                            <VerticalStackLayout Grid.Column="1"
-                                                 Spacing="4"
-                                                 VerticalOptions="Center">
-                                <Label Text="{Binding Title}"
-                                       TextColor="#E7EAF0"
-                                       FontAttributes="Bold"
-                                       LineBreakMode="TailTruncation" />
+                        <Border BackgroundColor="{DynamicResource CardBg}"
+                                Stroke="{DynamicResource CardStroke}"
+                                StrokeThickness="1"
+                                Padding="10"
+                                Margin="0,0,0,10">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="18" />
+                            </Border.StrokeShape>
 
-                                <Label Text="{Binding Year}"
-                                       TextColor="#A0A7B5"
-                                       FontSize="12" />
-                            </VerticalStackLayout>
-                        </Grid>
-                    </Border>
+                            <Grid ColumnDefinitions="78,*" ColumnSpacing="12">
+                                <Image Source="{Binding PosterSafe}"
+                                       WidthRequest="78"
+                                       HeightRequest="100"
+                                       Aspect="AspectFill" />
 
-                </SwipeView>
+                                <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                                    <Label Text="{Binding Title}"
+                                           FontAttributes="Bold"
+                                           LineBreakMode="TailTruncation"
+                                           TextColor="{DynamicResource Text}" />
+                                    <Label Text="{Binding Year}"
+                                           FontSize="12"
+                                           TextColor="{DynamicResource SubText}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
 
-            </DataTemplate>
-        </CollectionView.ItemTemplate>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
 
-    </CollectionView>
+        </CollectionView>
 
+    </Grid>
 </ContentPage>

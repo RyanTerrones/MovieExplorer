@@ -19,13 +19,25 @@ public partial class WatchlistPage : ContentPage
     private void Refresh()
     {
         WatchlistView.ItemsSource = null;
-        WatchlistView.ItemsSource = App.Library.GetWatchlist();
+        WatchlistView.ItemsSource = App.Library.GetWatchList();
+    }
+
+    private void Menu_Clicked(object sender, EventArgs e)
+    {
+        MainFlyoutPage.Current?.ToggleFlyout();
+    }
+
+    private async void Back_Clicked(object sender, EventArgs e)
+    {
+        if (Navigation.NavigationStack.Count > 1)
+            await Navigation.PopAsync();
+        else
+            MainFlyoutPage.Current?.NavigateTo(new MoviesPage());
     }
 
     private async void ClearWatchlist_Clicked(object sender, EventArgs e)
     {
-        var ok = await DisplayAlert("Clear watchlist?",
-            "This will remove all watchlist movies.", "Clear", "Cancel");
+        var ok = await DisplayAlert("Clear watchlist?", "This will remove all watchlist movies.", "Clear", "Cancel");
         if (!ok) return;
 
         await App.Library.ClearWatchlistAsync();
@@ -52,11 +64,10 @@ public partial class WatchlistPage : ContentPage
 
     private async void RemoveWatchlist_Invoked(object sender, EventArgs e)
     {
-        var swipeItem = (SwipeItem)sender;
-        var imdbId = swipeItem.CommandParameter as string;
+        if (sender is not SwipeItem swipeItem) return;
 
-        if (string.IsNullOrWhiteSpace(imdbId))
-            return;
+        var imdbId = swipeItem.CommandParameter as string;
+        if (string.IsNullOrWhiteSpace(imdbId)) return;
 
         await App.Library.RemoveWatchlistAsync(imdbId);
         Refresh();

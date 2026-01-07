@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="MovieExplorer.Resources.Styles.ThemeLight">
+
+    <!-- core background -->
+    <Color x:Key="Bg">#F4F6F8</Color>
+    <Color x:Key="PageBackground">#F4F6F8</Color>
+    <Color x:Key="PageBackgroundColor">#F4F6F8</Color>
+
+    <!-- flyout -->
+    <Color x:Key="FlyoutBg">#EEF1F4</Color>
+
+    <!-- cards -->
+    <Color x:Key="CardBg">#FFFFFF</Color>
+    <Color x:Key="CardStroke">#D6DDE6</Color>
+
+    <!-- text -->
+    <Color x:Key="Text">#111418</Color>
+    <Color x:Key="SubText">#5D6A79</Color>
+
+    <!-- accents -->
+    <Color x:Key="AccentGreen">#21B57A</Color>
+    <Color x:Key="AccentRed">#E50914</Color>
+</ResourceDictionary>

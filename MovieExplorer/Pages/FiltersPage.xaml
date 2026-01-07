@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MovieExplorer.Pages.FiltersPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Filters"
+    NavigationPage.HasNavigationBar="False"
+    BackgroundColor="{DynamicResource Bg}">
+
+    <VerticalStackLayout Padding="16" Spacing="12">
+
+        <Label Text="Filters"
+               TextColor="#E7EAF0"
+               FontSize="22"
+               FontAttributes="Bold"/>
+
+        <Border BackgroundColor="#181B22"
+                Stroke="#202533"
+                StrokeThickness="1"
+                Padding="14">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="18"/>
+            </Border.StrokeShape>
+
+            <VerticalStackLayout Spacing="12">
+
+                <Label Text="Type" TextColor="#A0A7B5"/>
+                <Picker x:Name="TypePicker" Title="Any" />
+
+                <Label Text="Year range" TextColor="#A0A7B5"/>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Entry x:Name="YearFromEntry" Placeholder="From (e.g. 2005)" Keyboard="Numeric"
+                           PlaceholderColor="#A0A7B5" TextColor="#E7EAF0"/>
+                    <Entry x:Name="YearToEntry" Grid.Column="1" Placeholder="To (e.g. 2024)" Keyboard="Numeric"
+                           PlaceholderColor="#A0A7B5" TextColor="#E7EAF0"/>
+                </Grid>
+
+                <Label Text="Sort" TextColor="#A0A7B5"/>
+                <Picker x:Name="SortPicker" Title="Title" />
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Button Text="Clear"
+                            BackgroundColor="#202533"
+                            TextColor="#E7EAF0"
+                            Clicked="Clear_Clicked"/>
+                    <Button Grid.Column="1"
+                            Text="Apply"
+                            BackgroundColor="#26D07C"
+                            TextColor="#0F1115"
+                            Clicked="Apply_Clicked"/>
+                </Grid>
+
+            </VerticalStackLayout>
+        </Border>
+
+    </VerticalStackLayout>
+</ContentPage>
